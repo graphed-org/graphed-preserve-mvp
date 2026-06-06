@@ -1,0 +1,81 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "graphed-preserve"
+version = "0.0.1"
+description = "graphed M9: self-contained content-addressed analysis preservation bundle"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "graphed-org" }]
+classifiers = [
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+# the canonical IR + introspection (graphed-core), the frontend (graphed) + awkward backend, the M8
+# content-addressed Store (graphed-checkpoint); HEP-standard payload libs for reproduce.
+dependencies = [
+  "graphed-core",
+  "graphed",
+  "graphed-awkward",
+  "graphed-checkpoint",
+  "awkward>=2.6",
+  "numpy>=1.24",
+  "correctionlib>=2.6",
+  "onnx>=1.15",
+  "onnxruntime>=1.17",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-cov", "hypothesis", "mypy", "ruff", "graphed-corpus"]
+docs = ["sphinx", "furo"]
+
+[project.urls]
+Homepage = "https://github.com/graphed-org/graphed-preserve"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/graphed_preserve"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "tests/frozen/m9"]
+addopts = "-q"
+
+[tool.coverage.run]
+branch = true
+source = ["graphed_preserve"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+
+[tool.ruff]
+line-length = 110
+src = ["src", "tests"]
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C4", "RUF", "PLC0415"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src"]
+
+[[tool.mypy.overrides]]
+module = [
+  "awkward.*",
+  "numpy.*",
+  "correctionlib.*",
+  "onnx.*",
+  "onnxruntime.*",
+  "graphed_awkward.*",
+  "graphed_corpus.*",
+]
+ignore_missing_imports = true
+follow_imports = "skip"
