@@ -29,8 +29,14 @@ requirement of A.3.1, built on M8's canonical IR + content-addressed Store.
   `UnresolvedPayload("… <hash>")` for any missing reference, never a silent wrong result.
 - **`inspect(bundle)`** renders IR + provenance + payload inventory + opaque-node risk flags WITHOUT
   executing. It is faithful to `reproduce` because both consume the SAME `GraphStore.nodes()` IR.
-- **`externals`** are the single source of eval truth (same code at build-time `materialize` and
-  reproduce → bit-for-bit): `eval_correctionlib`, `eval_onnx`.
+- **`externals`** is an extensible **plugin** system (not a hardwired list). An `ExternalPlugin`
+  gives a `kind` a deterministic content-based `content_hash` (ONNX → weights, correctionlib →
+  contents, `sha256_bytes` → raw bytes), an `evaluate`, and `samples`. `register_plugin` **validates**
+  the hash: cross-process determinism (two `PYTHONHASHSEED`s → rejects `hash()`/`id()`/time/random)
+  and non-vacuity (distinct payloads must not collide). `record_external(session, plugin, payload,
+  inputs)` records a preservable External; the same `plugin.evaluate` runs at build-time `materialize`
+  and at reproduce → bit-for-bit. `onnx` + `correctionlib` ship as plugins and double as user
+  templates; `build_bundle` verifies each payload hashes to its recorded id (cache-poisoning-safe).
 
 ## Self-fingerprinting
 

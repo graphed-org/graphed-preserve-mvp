@@ -28,6 +28,7 @@ dependencies = [
   "correctionlib>=2.6",
   "onnx>=1.15",
   "onnxruntime>=1.17",
+  "cloudpickle",
 ]
 
 [project.optional-dependencies]
@@ -74,6 +75,7 @@ module = [
   "correctionlib.*",
   "onnx.*",
   "onnxruntime.*",
+  "cloudpickle.*",
   "graphed_awkward.*",
   "graphed_corpus.*",
 ]
