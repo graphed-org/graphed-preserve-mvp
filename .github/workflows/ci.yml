@@ -90,3 +90,45 @@ jobs:
           python -m pip install "${{ env.CHECKPOINT }}"
           python -m pip install -e ".[docs]"
           sphinx-build -W -b html docs docs/_build/html
+
+  # Reproduce a preservation bundle through a REAL NVIDIA Triton server, over gRPC AND HTTP
+  # (the fully-realistic External-plugin test). The container serves tests/samples/triton_models.
+  triton:
+    name: real triton server (grpc + http)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Start Triton server with the example model
+        run: |
+          docker run -d --rm --name triton -p 8000:8000 -p 8001:8001 -p 8002:8002 \
+            -v ${{ github.workspace }}/tests/samples/triton_models:/models \
+            nvcr.io/nvidia/tritonserver:25.11-pyt-python-py3 \
+            tritonserver --model-repository=/models
+      - name: Install deps + this package + triton client (grpc + http)
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "${{ env.CORE }}" "${{ env.FRONTEND }}" "${{ env.AWKWARD }}"
+          python -m pip install "${{ env.CHECKPOINT }}" "${{ env.CORPUS }}"
+          python -m pip install -e ".[dev]" "tritonclient[all]"
+      - name: Wait for Triton to be ready
+        run: |
+          for i in $(seq 1 90); do
+            if [ "$(curl -s -o /dev/null -w '%{http_code}' localhost:8000/v2/health/ready)" = "200" ]; then
+              echo "triton ready after ${i} tries"; exit 0
+            fi
+            sleep 2
+          done
+          echo "triton did not become ready"; docker logs triton; exit 1
+      - name: Reproduce a bundle through real Triton (gRPC + HTTP)
+        env:
+          GRAPHED_TRITON_GRPC: localhost:8001
+          GRAPHED_TRITON_HTTP: localhost:8000
+        run: pytest tests/frozen/m9/test_triton_server.py -v
+      - name: Triton logs (on failure)
+        if: failure()
+        run: docker logs triton || true
