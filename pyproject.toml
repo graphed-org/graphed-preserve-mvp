@@ -39,7 +39,7 @@ docs = ["sphinx", "furo"]
 mltest = ["torch", "xgboost", "tritonclient[http]"]
 
 [project.urls]
-Homepage = "https://github.com/graphed-org/graphed-preserve"
+Homepage = "https://github.com/graphed-org/graphed-preserve-mvp"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/graphed_preserve"]

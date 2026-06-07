@@ -11,11 +11,11 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  CORE: "graphed-core @ git+https://github.com/graphed-org/graphed-core@main"
-  FRONTEND: "graphed @ git+https://github.com/graphed-org/graphed@main"
-  AWKWARD: "graphed-awkward @ git+https://github.com/graphed-org/graphed-awkward@main"
-  CHECKPOINT: "graphed-checkpoint @ git+https://github.com/graphed-org/graphed-checkpoint@main"
-  CORPUS: "graphed-corpus @ git+https://github.com/graphed-org/graphed-corpus@main"
+  CORE: "graphed-core @ git+https://github.com/graphed-org/graphed-core-mvp@main"
+  FRONTEND: "graphed @ git+https://github.com/graphed-org/graphed-mvp@main"
+  AWKWARD: "graphed-awkward @ git+https://github.com/graphed-org/graphed-awkward-mvp@main"
+  CHECKPOINT: "graphed-checkpoint @ git+https://github.com/graphed-org/graphed-checkpoint-mvp@main"
+  CORPUS: "graphed-corpus @ git+https://github.com/graphed-org/graphed-corpus-mvp@main"
 
 jobs:
   test:

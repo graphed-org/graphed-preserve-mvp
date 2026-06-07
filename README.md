@@ -1,6 +1,6 @@
 # graphed-preserve
 
-The analysis **preservation bundle** for [`graphed`](https://github.com/graphed-org/graphed-project)
+The analysis **preservation bundle** for [`graphed`](https://github.com/graphed-org/graphed-project-mvp)
 — **milestone M9** (the final one).
 
 A self-contained, content-addressed export of a `graphed` analysis that **reproduces its histograms
