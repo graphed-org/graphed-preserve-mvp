@@ -31,12 +31,16 @@ requirement of A.3.1, built on M8's canonical IR + content-addressed Store.
   executing. It is faithful to `reproduce` because both consume the SAME `GraphStore.nodes()` IR.
 - **`externals`** is an extensible **plugin** system (not a hardwired list). An `ExternalPlugin`
   gives a `kind` a deterministic content-based `content_hash` (ONNX → weights, correctionlib →
-  contents, `sha256_bytes` → raw bytes), an `evaluate`, and `samples`. `register_plugin` **validates**
-  the hash: cross-process determinism (two `PYTHONHASHSEED`s → rejects `hash()`/`id()`/time/random)
-  and non-vacuity (distinct payloads must not collide). `record_external(session, plugin, payload,
-  inputs)` records a preservable External; the same `plugin.evaluate` runs at build-time `materialize`
-  and at reproduce → bit-for-bit. `onnx` + `correctionlib` ship as plugins and double as user
-  templates; `build_bundle` verifies each payload hashes to its recorded id (cache-poisoning-safe).
+  contents, `sha256_bytes` → raw bytes), an optional `load(payload, params) -> resource` + `close`,
+  an `evaluate(resource, params, inputs)`, and `samples`. `register_plugin` **validates** the hash:
+  cross-process determinism (two `PYTHONHASHSEED`s → rejects `hash()`/`id()`/time/random) and
+  non-vacuity (distinct payloads must not collide). A `ResourceCache` `load`s each payload **once per
+  worker** (a model or a connection) and `close`s it at run end — `open_once` for Externals.
+  `record_external(session, plugin, payload, inputs)` records a preservable External; the same
+  `plugin.evaluate` runs at build-time `materialize` and at reproduce → bit-for-bit. `onnx` +
+  `correctionlib` ship as plugins and double as user templates (validated against torch/xgboost/triton
+  in `tests/frozen/m9/test_ml_plugins.py`); `build_bundle` verifies each payload hashes to its recorded
+  id (cache-poisoning-safe).
 
 ## Self-fingerprinting
 
