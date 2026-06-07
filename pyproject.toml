@@ -34,6 +34,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest", "pytest-cov", "hypothesis", "mypy", "ruff", "graphed-corpus"]
 docs = ["sphinx", "furo"]
+# optional ML frameworks that exercise the ExternalPlugin API (tests/frozen/m9/test_ml_plugins.py);
+# NOT installed in CI — those tests pytest.importorskip and skip when the frameworks are absent.
+mltest = ["torch", "xgboost", "tritonclient[http]"]
 
 [project.urls]
 Homepage = "https://github.com/graphed-org/graphed-preserve"
