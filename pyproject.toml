@@ -32,7 +32,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-cov", "hypothesis", "mypy", "ruff", "graphed-corpus"]
+dev = ["pytest", "pytest-cov", "hypothesis", "mypy", "ruff", "graphed-corpus", "graphed-histogram", "boost-histogram>=1.4"]
 docs = ["sphinx", "furo"]
 # optional ML frameworks that exercise the ExternalPlugin API (tests/frozen/m9/test_ml_plugins.py);
 # NOT installed in CI — those tests pytest.importorskip and skip when the frameworks are absent.
@@ -46,7 +46,7 @@ packages = ["src/graphed_preserve"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src", "tests/frozen/m9"]
+pythonpath = ["src", "tests/frozen/m9", "tests/frozen/m25"]
 addopts = "-q"
 
 [tool.coverage.run]
@@ -81,6 +81,7 @@ module = [
   "cloudpickle.*",
   "graphed_awkward.*",
   "graphed_corpus.*",
-]
+, "graphed_histogram.*"]
 ignore_missing_imports = true
+follow_imports = "skip"
 follow_imports = "skip"
