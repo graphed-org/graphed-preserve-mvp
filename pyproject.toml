@@ -81,7 +81,7 @@ module = [
   "cloudpickle.*",
   "graphed_awkward.*",
   "graphed_corpus.*",
-, "graphed_histogram.*"]
+  "graphed_histogram.*",
+]
 ignore_missing_imports = true
-follow_imports = "skip"
 follow_imports = "skip"
