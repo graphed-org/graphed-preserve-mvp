@@ -34,9 +34,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest", "pytest-cov", "hypothesis", "mypy", "ruff", "graphed-corpus", "graphed-histogram", "boost-histogram>=1.4"]
 docs = ["sphinx", "furo"]
-# optional ML frameworks that exercise the ExternalPlugin API (tests/frozen/m9/test_ml_plugins.py);
-# NOT installed in CI — those tests pytest.importorskip and skip when the frameworks are absent.
-mltest = ["torch", "xgboost", "tritonclient[http]"]
+# optional ML frameworks behind the shipped M26 plugins (tests/frozen/m26) and the M9 API-shape
+# tests; the dedicated `ml` CI job installs them — the base matrix pytest.importorskip-skips.
+mltest = ["torch", "xgboost", "tritonclient[http]", "tensorflow", "jax"]
 
 [project.urls]
 Homepage = "https://github.com/graphed-org/graphed-preserve-mvp"
@@ -46,7 +46,7 @@ packages = ["src/graphed_preserve"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src", "tests/frozen/m9", "tests/frozen/m25"]
+pythonpath = ["src", "tests/frozen/m9", "tests/frozen/m25", "tests/frozen/m26"]
 addopts = "-q"
 
 [tool.coverage.run]
@@ -82,6 +82,12 @@ module = [
   "graphed_awkward.*",
   "graphed_corpus.*",
   "graphed_histogram.*",
+  "keras.*",
+  "tensorflow.*",
+  "torch.*",
+  "xgboost.*",
+  "jax.*",
+  "tritonclient.*",
 ]
 ignore_missing_imports = true
 follow_imports = "skip"

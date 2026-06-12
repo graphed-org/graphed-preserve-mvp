@@ -49,6 +49,69 @@ jobs:
       - name: Pytest + coverage gate (>=90%)
         run: pytest tests/frozen --cov=graphed_preserve --cov-branch --cov-report=term-missing
 
+  # The M26 LIVE-Triton tier: a real tritonserver container hosting the scorer model; the frozen
+  # live test runs the DEFAULT tritonclient transport over the wire (skipped wherever
+  # TRITON_SERVER_URL is unset — locally and in every other job).
+  test-triton-live:
+    name: test (live triton server) py3.12
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Free disk space for the tritonserver image
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc || true
+      - name: Install deps + this package + the triton client
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "${{ env.CORE }}" "${{ env.FRONTEND }}" "${{ env.AWKWARD }}"
+          python -m pip install "${{ env.CHECKPOINT }}" "${{ env.CORPUS }}" "${{ env.HISTO }}"
+          python -m pip install -e ".[dev]" "tritonclient[http]"
+      - name: Build the model repository and start tritonserver
+        run: |
+          python scripts/make_triton_model_repo.py /tmp/triton-models
+          docker run -d --name triton -p 8000:8000 -v /tmp/triton-models:/models \
+            nvcr.io/nvidia/tritonserver:24.09-py3 tritonserver --model-repository=/models
+          for i in $(seq 1 60); do
+            curl -sf localhost:8000/v2/health/ready && break
+            sleep 5
+            if [ "$i" = "60" ]; then docker logs triton; exit 1; fi
+          done
+      - name: Run the live test (it must RUN here, not skip)
+        env:
+          TRITON_SERVER_URL: localhost:8000
+        run: |
+          pytest tests/frozen/m26 -q -rs -k "triton_live" | tee liverun.txt
+          grep -E "1 passed" liverun.txt || (echo "the live triton test did not run+pass" && docker logs triton && exit 1)
+
+  # The M26 ML-framework tier: the shipped TensorFlow/PyTorch/XGBoost/JAX/Triton plugins against
+  # their REAL frameworks (the base matrix runs the dependency-free tier and importorskips these).
+  # One cell is enough: the frameworks are platform-independent at this level and heavy to install.
+  test-ml-frameworks:
+    name: test (ml frameworks) py3.12
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install deps + this package + ML frameworks
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "${{ env.CORE }}" "${{ env.FRONTEND }}" "${{ env.AWKWARD }}"
+          python -m pip install "${{ env.CHECKPOINT }}" "${{ env.CORPUS }}" "${{ env.HISTO }}"
+          python -m pip install -e ".[dev,mltest]"
+      - name: Pytest (frozen suites, frameworks present — nothing may skip in m26)
+        run: |
+          pytest tests/frozen --cov=graphed_preserve --cov-branch
+          pytest tests/frozen/m26 -q -rs -k "not triton_live" | tee mlrun.txt
+          ! grep -i "skipped" mlrun.txt || (echo "m26 skipped tests with frameworks installed" && exit 1)
+
   # Free-threaded / bleeding-edge Pythons (plan A.5): genuinely exercises concurrency under no-GIL.
   # Experimental + non-blocking (awkward wheels may lag on 3.14 / 3.14t).
   test-experimental:

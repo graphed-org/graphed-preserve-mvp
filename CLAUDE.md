@@ -55,7 +55,7 @@ things (no timestamps / absolute paths in the manifest; provenance filenames are
 src/graphed_preserve/manifest.py     canonical BOM serialization + fingerprint
 src/graphed_preserve/bundle.py       Bundle + build_bundle / reproduce / inspect
 src/graphed_preserve/interpreter.py  IR interpreter (run_ir over GraphStore.nodes())
-src/graphed_preserve/externals.py    correctionlib + ONNX evaluators (eval truth)
+src/graphed_preserve/externals/      plugin package: _base (machinery) + one <name>_external.py per plugin
 src/graphed_preserve/errors.py       PreserveError / UnresolvedPayload
 tests/frozen/m9/agc.py               the AGC-ttbar fixture (real correctionlib JSON + ONNX model)
 ```
