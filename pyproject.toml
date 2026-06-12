@@ -46,7 +46,7 @@ packages = ["src/graphed_preserve"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src", "tests/frozen/m9", "tests/frozen/m25", "tests/frozen/m26", "tests/frozen/m27"]
+pythonpath = ["src", "tests/frozen/m9", "tests/frozen/m25", "tests/frozen/m26", "tests/frozen/m27", "tests/frozen/m30"]
 addopts = "-q"
 
 [tool.coverage.run]
