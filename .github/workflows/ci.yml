@@ -45,6 +45,9 @@ jobs:
       - name: Install ML frameworks (full)
         if: runner.os != 'Windows' && matrix.python != '3.14'
         run: python -m pip install -e ".[mltest]"
+      - name: Install the OpenMP runtime xgboost links against (macOS)
+        if: runner.os == 'macOS' && matrix.python != '3.14'
+        run: brew install libomp
       - name: Install ML frameworks (windows - tensorflow ships no native wheels)
         if: runner.os == 'Windows' && matrix.python != '3.14'
         run: python -m pip install torch xgboost jax "tritonclient[http]"
@@ -55,13 +58,14 @@ jobs:
       - name: Mypy (strict)
         run: mypy
       - name: Pytest + coverage gate (>=90%)
-        if: matrix.python != '3.14'
+        if: runner.os != 'Windows' && matrix.python != '3.14'
         run: pytest tests/frozen --cov=graphed_preserve --cov-branch --cov-report=term-missing
-      # 3.14: the ML frameworks do not (all) publish cp314 wheels yet, so the plugin evaluators
-      # cannot execute - the suite still runs in full; the coverage GATE is measured on the
-      # framework-complete cells above (and the triton job), where it is meaningful.
-      - name: Pytest (py3.14 - frameworks unavailable, suite only)
-        if: matrix.python == '3.14'
+      # Framework-INCOMPLETE cells (3.14: no cp314 wheels yet; windows: tensorflow ships no
+      # native wheels) run the FULL suite without the coverage MEASUREMENT - the gate (still
+      # 90) is enforced on the nine framework-complete cells and the everything-present
+      # triton job, where the plugin evaluators can actually execute.
+      - name: Pytest (framework-incomplete cell - suite only)
+        if: runner.os == 'Windows' || matrix.python == '3.14'
         run: pytest tests/frozen
 
   # Free-threaded / bleeding-edge Pythons (plan A.5): genuinely exercises concurrency under no-GIL.

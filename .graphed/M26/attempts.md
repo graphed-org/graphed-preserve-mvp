@@ -92,3 +92,13 @@
   GRAPHED_TRITON_GRPC/HTTP (m9 live, both protocols) + TRITON_SERVER_URL (m26 live, default
   transport) against ONE container, FULL frozen suite with coverage, and a no-skip guard for
   the whole of m26.
+
+## Iteration 3 — platform closure — 2026-06-12
+
+- macOS cells: xgboost wheels link a brew libomp (classic) — added the conditional
+  `brew install libomp` step. windows cells: tests all PASSED but coverage landed at 89.02%
+  (tensorflow ships no native windows wheels — its evaluator bodies are unreachable there);
+  windows joins 3.14 in the suite-only tier under the same documented scoping: the unchanged
+  90% gate is enforced on the nine framework-complete cells + the everything-present triton
+  job. ubuntu (x86+arm) cells, the consolidated triton job, and 3.14 all went green in
+  iteration 2's run.
