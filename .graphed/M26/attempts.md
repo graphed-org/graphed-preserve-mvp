@@ -70,3 +70,25 @@
 - Gates re-run post-refactor: 63 passed + 3 skipped (live triton, + framework skips n/a locally)
   · coverage 95.01% · ruff + format clean · mypy --strict clean (16 files) · sphinx -W clean ·
   determinism: byte-identical bundle fingerprints across two fresh processes.
+
+## Iteration 2 — testing-strategy consolidation (user directive) — 2026-06-12
+
+- CI verdict on 8137797 exposed exactly what the user called: (a) TWO live-triton setups — my
+  new test-triton-live job DUPLICATED the pre-existing m9 `triton` job ("real triton server
+  (grpc + http)", committed python-backend scorer model at tests/samples/triton_models — which
+  I had not noticed further down ci.yml); (b) the base matrix failed coverage (80.88%) because
+  the ML plugin code shipped in the package while the frameworks lived only in a side job.
+- CONSOLIDATED: deleted test-triton-live AND test-ml-frameworks AND my duplicate
+  scripts/make_triton_model_repo.py (the committed samples repo is the single source — and the
+  served model is literally sigmoid(0.45x - 0.1) with io x/y, identical to the m26 live test's
+  descriptor, so the test rides the SAME server unmodified).
+- BASE matrix now installs the ML frameworks (.[mltest] on linux/macos <=3.14-exclusive;
+  windows gets torch/xgboost/jax/tritonclient — tensorflow ships no native windows wheels), so
+  the m26 framework tier and its coverage run IN the base suite. py3.14 cells: frameworks lack
+  cp314 wheels — full suite still runs, the coverage GATE is measured on the 12
+  framework-complete cells + the triton job (scoping the measurement to environments where the
+  evaluators can execute; threshold unchanged at 90 everywhere it measures).
+- The single `triton` job is now the everything-present cell: [dev,mltest] + tritonclient[all],
+  GRAPHED_TRITON_GRPC/HTTP (m9 live, both protocols) + TRITON_SERVER_URL (m26 live, default
+  transport) against ONE container, FULL frozen suite with coverage, and a no-skip guard for
+  the whole of m26.
