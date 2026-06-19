@@ -51,12 +51,9 @@ jobs:
       - name: Install ML frameworks (windows - tensorflow ships no native wheels)
         if: runner.os == 'Windows' && matrix.python != '3.14'
         run: python -m pip install torch xgboost jax "tritonclient[http]"
-      - name: Ruff
-        run: |
-          ruff check .
-          ruff format --check .
-      - name: Mypy (strict)
-        run: mypy
+      - uses: astral-sh/setup-uv@v5
+      - name: Lint + types (pre-commit hooks via prek)
+        run: uvx prek@0.4.5 run --all-files --show-diff-on-failure
       - name: Pytest + coverage gate (>=90%)
         if: runner.os != 'Windows' && matrix.python != '3.14'
         run: pytest tests/frozen --cov=graphed_preserve --cov-branch --cov-report=term-missing
